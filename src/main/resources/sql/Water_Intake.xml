@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Water">
+
+	<!-- <insert id="insert" parameterType="Water">
+	<selectKey resultType="int" order="BEFORE"
+					keyProperty="wi_no">
+			select nvl(max(WI_NO),0)+1 from WATER_INTAKE
+	</selectKey>
+		insert into WATER_INTAKE 
+		(WI_NO, USER_ID, title, time_start, time_end) values
+		(#{wi_no}, #{user_id}, #{title}, #{time_start}, #{time_end})		
+	</insert> -->
+	
+	<select id="select" resultType="Water" parameterType="String">
+		select * from water_intake
+		where SUBSTR(time_start,1,7) = #{date} 
+	</select>
+	
+	<insert id="add" parameterType="map">
+	<selectKey resultType="int" order="BEFORE"
+					keyProperty="wi_no">
+			select nvl(max(WI_NO),0)+1 from WATER_INTAKE
+	</selectKey>
+		insert into WATER_INTAKE 
+		(WI_NO, USER_ID, title, time_start) values
+		(#{wi_no}, #{user_id}, #{title}, to_char(sysdate, 'yyyy-mm-dd'))	
+	</insert>
+	
+	<select id="doughnutlist" parameterType="String" resultType="float">
+		select title 
+		from water_intake 
+		where user_id = #{id}
+		and time_start = to_char(sysdate, 'yyyy-mm-dd')
+	</select>
+	
+	<select id="doughnutlistcount" parameterType="String" resultType="int">
+		select count(*) from water_intake
+		where time_start = to_char(sysdate, 'yyyy-mm-dd')
+		and user_id = #{id}
+	</select>
+	
+	<update id="update" parameterType="Water">
+		update water_intake 
+		set title = title + #{title}
+		where time_start = to_char(sysdate, 'yyyy-mm-dd')
+		and user_id = #{user_id}
+	</update>
+	
+	<delete id="delWater" parameterType="map">
+		delete water_intake
+		where time_start = to_char(sysdate, 'yyyy-mm-dd')
+		and user_id = #{id}
+	</delete>
+	
+</mapper>

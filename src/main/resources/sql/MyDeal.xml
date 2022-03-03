@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="MyDeal">
+
+<select id="buy_bidding" resultType="int">
+	select count(*) from my_deal where buy_bidding = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="buy_bidcom" resultType="int">
+	select count(*) from my_deal where buy_bidcom = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="buy_bidfail" resultType="int">
+	select count(*) from my_deal where buy_bidfail = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="buy_delivery" resultType="int">
+	select count(*) from my_deal where buy_delivery = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="sell_bidding" resultType="int">
+	select count(*) from my_deal where sell_bidding = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="sell_bidcom" resultType="int">
+	select count(*) from my_deal where sell_bidcom = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="sell_delivery" resultType="int">
+	select count(*) from my_deal where sell_delivery = 1
+   and user_id = #{sessionid}
+</select>
+
+<select id="auccart" parameterType="java.util.Map" resultType="Auction">
+select deal_auction.AUC_NUMBER , AUC_SUBJECT, AUC_CONTENT , DEAL_AUCTION.USER_ID ,
+AUC_DATE , AUC_PRICE , AUC_UNIT , AUC_LPRICE , AUC_COUNT , AUC_DELIVERY , AUC_DELIVERYCOM , AUC_DELIVERYNUM ,
+AUC_READCOUNT , AUC_NOWDATE , AUC_SPRICE
+from  deal_auction inner join my_deal
+on deal_auction.auc_number = deal_auction.auc_number 
+where deal_csfc = 1 and pick =1 and my_deal.user_id = #{sessionid}
+and DEAL_AUCTION.auc_number = my_deal.auc_number
+</select>
+
+<delete id="cartdel" parameterType="java.util.Map">
+delete from my_deal
+where 	
+	auc_number = #{num} 
+	and user_id = #{sessionid}
+	and pick = 1
+	and deal_csfc = 1 
+</delete>
+
+<select id="dircart" parameterType="java.util.Map" resultType="Direct">
+select DIR_NUMBER , DIR_SUBJECT, DIR_CONTENT , Deal_Direct.USER_ID ,DIR_ADDRESS,
+DIR_DATE , DIR_PRICE , DIR_PHONE , DIR_READCOUNT
+from  Deal_Direct inner join my_deal
+on DIR_NUMBER = auc_number 
+where deal_csfc = 2 and pick =1 and my_deal.user_id = #{sessionid}
+and DIR_NUMBER = auc_number
+</select>
+
+<delete id="cartdel2" parameterType="java.util.Map">
+delete from my_deal
+where 	
+	auc_number = #{num} 
+	and user_id = #{sessionid}
+	and pick = 1
+	and deal_csfc = 2 
+</delete>
+
+<sql id="view">
+	<if test="view != null">
+			<choose>
+				<when test="view==1">BUY_BIDDING</when>
+				<when test="view==2">BUY_BIDCOM</when>
+				<when test="view==3">BUY_BIDFAIL</when>
+				<when test="view==4">BUY_DELIVERY</when>
+			</choose>
+	</if>
+</sql>
+
+<sql id="view2">
+	<if test="view2 != null">
+			<choose>
+				<when test="view2==1">SELL_BIDDING</when>
+				<when test="view2==2">SELL_DELIVERY</when>
+				<when test="view2==3">SELL_BIDCOM</when>
+				
+			</choose>
+	</if>
+</sql>
+<select id="count" resultType="int" parameterType="java.util.Map">
+select count(*)
+from  deal_auction inner join my_deal
+on deal_auction.auc_number = deal_auction.auc_number 
+where deal_csfc = 1 and <include refid="view" /> =1 and my_deal.user_id = #{sessionid}
+and DEAL_AUCTION.auc_number = my_deal.auc_number
+</select>
+
+
+
+<select id="buylist" parameterType="java.util.Map" resultType="Auction">
+select * from
+	(select  rownum rnum , deal_auction.AUC_NUMBER , AUC_SUBJECT, AUC_CONTENT , DEAL_AUCTION.USER_ID ,
+AUC_DATE , AUC_PRICE , AUC_UNIT , AUC_LPRICE , AUC_COUNT , AUC_DELIVERY , AUC_DELIVERYCOM , AUC_DELIVERYNUM ,
+AUC_READCOUNT , AUC_NOWDATE , AUC_SPRICE
+from  deal_auction inner join my_deal
+on deal_auction.auc_number = deal_auction.auc_number 
+where deal_csfc = 1 and <include refid="view" /> =1 and my_deal.user_id = #{sessionid}
+and DEAL_AUCTION.auc_number = my_deal.auc_number)
+ where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+</select>
+
+
+<select id="selllist" parameterType="java.util.Map" resultType="Auction">
+select * from
+	(select  rownum rnum , deal_auction.AUC_NUMBER , AUC_SUBJECT, AUC_CONTENT , DEAL_AUCTION.USER_ID ,
+AUC_DATE , AUC_PRICE , AUC_UNIT , AUC_LPRICE , AUC_COUNT , AUC_DELIVERY , AUC_DELIVERYCOM , AUC_DELIVERYNUM ,
+AUC_READCOUNT , AUC_NOWDATE , AUC_SPRICE
+from  deal_auction inner join my_deal
+on deal_auction.auc_number = deal_auction.auc_number 
+where deal_csfc = 1 and <include refid="view2" /> =1 and my_deal.user_id = #{sessionid}
+and DEAL_AUCTION.auc_number = my_deal.auc_number)
+ where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+</select>
+
+
+
+<select id="count2" resultType="int" parameterType="java.util.Map">
+select count(*)
+from  deal_auction inner join my_deal
+on deal_auction.auc_number = deal_auction.auc_number 
+where deal_csfc = 1 and <include refid="view2" /> =1 and my_deal.user_id = #{sessionid}
+and DEAL_AUCTION.auc_number = my_deal.auc_number
+</select>
+
+
+<update id="postinput1" parameterType="java.util.Map">
+update deal_auction set 
+AUC_DELIVERYCOM = #{sel} , 
+AUC_DELIVERYNUM = #{post1}
+where  AUC_NUMBER = #{num}  
+
+</update>
+
+<update id="postinput2" parameterType="int">
+update my_deal set 
+BUY_BIDCOM= 0 , 
+BUY_DELIVERY = 1
+where  AUC_NUMBER = #{num}  
+and DEAL_CSFC =  1
+and buy_bidcom=1
+</update>
+
+<update id="postinput3" parameterType="int">
+update my_deal set 
+SELL_DELIVERY= 0 , 
+SELL_BIDCOM = 1
+where  AUC_NUMBER = #{num}  
+and DEAL_CSFC =  1 
+and sell_delivery=1
+
+</update>
+
+<delete id="receipt1" parameterType="java.util.Map">
+delete from deal_auction
+where 	
+	auc_number = #{num} 
+ 
+</delete>
+
+<delete id="receipt2" parameterType="java.util.Map">
+delete from my_deal
+where 	
+	auc_number = #{num} 
+	and deal_csfc = 1
+ 
+</delete>
+
+<select id="bquestion" resultType="int">
+	select count(*) from deal_question where DEAL_CSFC = 1
+   and QUESTION_ID = #{sessionid}
+</select>
+
+<select id="squestion" resultType="int">
+	select count(*) from deal_question where DEAL_CSFC = 1
+   and SELL_ID = #{sessionid}
+</select>
+
+<select id="dealbuyquestion" parameterType="java.util.Map" resultType="question">
+select * from deal_question where question_id = #{sessionid} and DEAL_CSFC = 1 
+</select>
+
+<select id="dealsellquestion" parameterType="java.util.Map" resultType="question">
+select * from deal_question where SELL_ID = #{sessionid} and DEAL_CSFC =1
+</select>
+
+<update id="aanswer" parameterType="java.util.Map">
+update deal_question set 
+QUESTION_ANSWER = #{tex}
+where  QUESTION_NUMBER = #{num}  
+and deal_csfc=1
+
+</update>
+<delete id="aquestiondel" parameterType="int">
+delete from deal_question
+where 	
+	QUESTION_NUMBER = #{num} 
+	and deal_csfc =1 
+
+</delete>
+
+<select id="dealbuyquestion2" parameterType="java.util.Map" resultType="question">
+select * from deal_question where question_id = #{sessionid} and deal_csfc=2
+</select>
+
+<select id="dealsellquestion2" parameterType="java.util.Map" resultType="question">
+select * from deal_question where SELL_ID = #{sessionid} and DEAL_CSFC =2
+</select>
+
+<update id="danswer" parameterType="java.util.Map">
+update deal_question set 
+QUESTION_ANSWER = #{tex}
+where  QUESTION_NUMBER = #{num}  
+and deal_csfc=2
+
+</update>
+
+<delete id="dquestiondel" parameterType="int">
+delete from deal_question
+where 	
+	QUESTION_NUMBER = #{num} 
+	and deal_csfc =2 
+
+</delete>
+
+<select id="squestion2" resultType="int">
+	select count(*) from deal_question where DEAL_CSFC = 2
+   and SELL_ID = #{sessionid}
+</select>
+
+<select id="bquestion2" resultType="int">
+	select count(*) from deal_question where DEAL_CSFC = 2
+   and QUESTION_ID = #{sessionid}
+</select>
+
+<insert id="pointdb" parameterType="java.util.Map">
+	insert into deal_point
+	(USER_ID)
+	VALUES( #{user_id})
+	
+</insert>
+
+<select id="nowpoint" resultType="int" parameterType="java.util.Map">
+	select REAL_POINT from deal_point
+   where USER_ID = #{sessionid}
+</select>
+
+<update id="pointrequest" parameterType="java.util.Map" >
+update deal_point set 
+SEND_NAME = #{name} , 
+REQUEST_POINT = #{point},
+POINT_PROCESS = 1 
+where  USER_ID = #{sessionid}  
+
+</update>
+
+<select id="pointreqlist" resultType="point">
+	select * from deal_point
+   where POINT_PROCESS = 1
+</select>
+
+<update id="pointsuc" parameterType="java.util.Map">
+update deal_point set 
+REAL_POINT = REAL_POINT + REQUEST_POINT ,
+REQUEST_POINT = 0 , 
+POINT_PROCESS = 0
+where  USER_ID = #{id}  
+
+</update>
+
+<update id="minuspoint" parameterType="java.util.Map" >
+update deal_point set 
+REAL_POINT = #{minuspoint}  
+where  USER_ID = #{sessionid}  
+
+</update>
+
+<update id="moneyreturn" parameterType="java.util.Map" >
+update deal_point set 
+REAL_POINT = #{dealunit2}  + REAL_POINT
+where  USER_ID = #{beforebidid}  
+
+</update>
+
+
+</mapper>

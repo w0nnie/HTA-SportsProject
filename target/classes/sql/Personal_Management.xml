@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Pm">
+
+	<insert id="insert" parameterType="pm">
+			<selectKey resultType="int" order="BEFORE"
+						keyProperty="PM_NO">
+			select nvl(max(PM_NO),0)+1 from PERSONAL_MANAGEMENT
+			</selectKey>
+		insert into PERSONAL_MANAGEMENT
+		(PM_NO, USER_ID, PM_KCAL, PM_DATE,SPORTS_NAME, SPORTS_IMG)
+		values(#{PM_NO}, #{USER_ID}, #{PM_KCAL}, sysdate, #{SPORTS_NAME}, #{SPORTS_IMG}) 
+	</insert>
+
+	<select id="select" parameterType="String" resultType="sports">
+		 SELECT SPORTS_NAME, CAL, SPORTS_IMG
+		 FROM SPORTS
+	 	<if test='_parameter != ""'>
+	 	where sports_name = #{sports}
+		</if>
+	</select>
+
+	<select id="selectkcal" parameterType="map" resultType="pm">
+		select * from
+		(select rownum rnum, pm_no, sports_name, pm_kcal, sports_img ,user_id
+		from PERSONAL_MANAGEMENT
+		where to_char(pm_date, 'YYYYMMDD') = to_char(sysdate, 'YYYYMMDD')
+		and USER_ID = #{id}
+		order by pm_date
+		)
+		where
+	  	<![CDATA[
+	  		rnum >= #{start} 
+	  	 AND
+	  	 	rnum <= #{end} 
+	  	]]>
+	</select>
+	
+	<select id="selectcount" parameterType="String" resultType="int">
+			select count(*) 
+			from personal_management
+			where to_char(pm_date, 'YYYYMMDD') = to_char(sysdate, 'YYYYMMDD')
+			and USER_ID=#{id}
+	</select>
+
+	<delete id="delete" parameterType="int">
+		delete PERSONAL_MANAGEMENT 
+		where PM_NO = #{num}
+	</delete>
+	
+	<select id="getCalendar" parameterType="map" resultType="map">
+	select  title,time_start,pm_kcal,pm_date 
+	from (select sum(pm_kcal) as pm_kcal, to_char(PM_DATE, 'yyyy-mm-dd') as pm_date
+      from personal_management 
+      where user_id = #{id}
+      and  to_char(PM_DATE,'yyyy-mm') = to_char(sysdate,'YYYY-MM')
+      group by to_char(PM_DATE, 'yyyy-mm-dd')
+      )pm 
+      full outer join 
+      (select title, time_start
+      from water_intake 
+      where user_id = #{id}
+      and substr(time_start,1,7)= to_char(sysdate, 'yyyy-mm')
+     )wi
+	on to_date(time_start, 'yyyy-mm-dd') = to_date(PM_DATE,'yyyy-mm-dd')
+	</select>
+	
+	<!-- <select id="getCalendar" parameterType="map" resultType="map"> 
+		select title,time_start,pm_kcal 
+		from (select sum(title) title, time_start
+    		  from water_intake
+     		  where user_id = #{id}
+       		  group by time_start), 
+     	(select sum(pm_kcal) pm_kcal, to_char(PM_DATE, 'yyyy-mm-dd') as pm_date
+       	from personal_management 
+       	where user_id = #{id}
+       	group by to_char(PM_DATE, 'yyyy-mm-dd')
+        )
+		where  PM_DATE = time_start		
+	</select> -->
+	
+</mapper>

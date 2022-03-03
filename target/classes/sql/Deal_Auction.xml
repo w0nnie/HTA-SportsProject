@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Auction">
+
+<select id="count" resultType="int">
+	select count(*) from Deal_Auction
+</select>
+
+
+<insert id="insert" parameterType="Auction">
+	insert into Deal_Auction
+	(AUC_NUMBER, AUC_SUBJECT , AUC_PRICE , AUC_LPRICE , AUC_UNIT ,
+	AUC_CONTENT,AUC_DELIVERY, AUC_DATE ,USER_ID,
+	ORI_AUC_MAINFILE , SAVE_AUC_MAINFILE ,
+	ORI_AUC_FILE2 ,SAVE_AUC_FILE2 ,
+	 ORI_AUC_FILE3 ,SAVE_AUC_FILE3 ,
+	 ORI_AUC_FILE4 , SAVE_AUC_FILE4 ,
+	 AUC_SPRICE)
+	VALUES( AUC_SEQ.NEXTVAL , #{AUC_SUBJECT} , #{AUC_PRICE} ,
+			#{AUC_LPRICE} , #{AUC_UNIT},
+			#{AUC_CONTENT} , #{AUC_DELIVERY},
+			#{AUC_DATE} , #{USER_ID} ,
+			#{ORI_AUC_MAINFILE} , #{SAVE_AUC_MAINFILE} ,
+			#{ORI_AUC_FILE2} , #{SAVE_AUC_FILE2} ,
+			#{ORI_AUC_FILE3} , #{SAVE_AUC_FILE3} ,
+			#{ORI_AUC_FILE4} , #{SAVE_AUC_FILE4},
+			#{AUC_PRICE})
+	
+
+
+</insert>
+
+<select id="list" parameterType="java.util.Map" resultType="Auction">
+select * from
+	(select rownum rnum , 	AUC_NUMBER , AUC_SUBJECT , AUC_DATE
+	AUC_PRICE ,AUC_COUNT ,SAVE_AUC_MAINFILE  ,AUC_SPRICE , AUC_NOWDATE ,USER_ID
+		from(
+		select * from Deal_Auction
+		order by <include refid="view" />))
+	 where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+	</select>
+
+<select id = "searchlist" parameterType="java.util.Map"
+	resultType="Auction">
+select * from
+	(select rownum rnum , 	AUC_NUMBER , AUC_SUBJECT , 
+	AUC_DATE ,AUC_PRICE ,AUC_COUNT ,SAVE_AUC_MAINFILE , AUC_SPRICE , AUC_NOWDATE ,USER_ID
+		from(
+		select * from Deal_Auction
+		where AUC_SUBJECT like #{search_word}
+		order by <include refid="view" />
+		))
+	 where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+	 
+</select>
+	
+<select id="detail" parameterType="int" resultType="Auction">
+	select *
+	from deal_auction
+	where AUC_NUMBER = #{number}
+
+</select>
+
+<update id="pricemodi" parameterType="Auction">
+		update deal_auction
+		set
+		AUC_price = Auc_price + #{AUC_UNIT},
+		AUC_COUNT = AUC_COUNT +1 
+		where AUC_NUMBER=#{AUC_NUMBER}
+</update>
+
+<update id="readcount" parameterType="int">
+update deal_auction set auc_READCOUNT = auc_READCOUNT +1 
+where auc_number = #{num} 
+
+</update>
+
+<insert id="biding" parameterType="java.util.Map">
+	insert into MY_DEAL
+	(USER_ID, AUC_NUMBER , BUY_BIDDING , DEAL_CSFC)
+	VALUES( #{sessionid}  , #{num} , 1  , 1)
+	
+</insert>
+
+<update id="change" parameterType="int">
+update my_deal set 
+BUY_BIDDING = 0 , 
+BUY_BIDFAIL = 1
+where  AUC_NUMBER = #{num} and BUY_BIDDING = 1 
+
+</update>
+
+<select id="bidcheck" resultType="Object"  parameterType="java.util.Map">
+	select * from MY_DEAL WHERE 
+	BUY_BIDDING = 1 AND USER_ID = #{sessionid} AND AUC_NUMBER = #{num}
+</select>
+
+<insert id="pick" parameterType="java.util.Map">
+	insert into MY_DEAL
+	(USER_ID, AUC_NUMBER , PICK , DEAL_CSFC)
+	VALUES( #{sessionid}  , #{num} , 1 , 1 )
+	
+</insert>
+
+<select id="pickcheck" resultType="Object"  parameterType="java.util.Map">
+	select * from MY_DEAL WHERE 
+	pick = 1 AND USER_ID = #{sessionid} AND AUC_NUMBER = #{num} AND DEAL_CSFC = 1
+</select>
+
+<insert id="myinsert" parameterType="Auction">
+	insert into my_deal
+	(USER_ID ,AUC_NUMBER, SELL_BIDDING , DEAL_CSFC)
+	values(#{USER_ID} , AUC_SEQ.CURRVAL , 1 , 1 )
+</insert>
+
+<update id="timeout" parameterType="int">
+UPDATE MY_DEAL
+SET   SELL_BIDDING = 0 ,
+	  SELL_DELIVERY = 1
+WHERE  AUC_NUMBER = #{NUMBER} 
+		AND SELL_BIDDING = 1
+
+</update>
+
+<update id="timeout2" parameterType="int">
+UPDATE MY_DEAL
+SET  BUY_BIDDING=0, 
+	 BUY_BIDCOM = 1
+WHERE  AUC_NUMBER = #{NUMBER}
+	 AND BUY_BIDDING=1
+
+</update>
+
+<delete id="timeout3" parameterType="int">
+delete from my_deal
+where 	
+	AUC_NUMBER = #{NUMBER}
+	AND SELL_BIDDING =0
+	AND BUY_BIDCOM = 0 
+	AND DEAL_CSFC = 1 
+	AND PICK = 1 OR BUY_BIDFAIL = 1
+</delete>
+
+<sql id="view">
+		<if test="view2 != null">
+			<choose>
+				<when test="view2==1">AUC_NUMBER desc</when>
+				<when test="view2==2">AUC_NUMBER asc</when>
+				<when test="view2==3">AUC_COUNT desc</when>
+				<when test="view2==4">AUC_SPRICE asc</when>
+				<when test="view2==5">AUC_PRICE asc</when>
+			</choose>
+		</if>
+	</sql>
+	
+<insert id="buynow1" parameterType="java.util.Map">
+	insert into my_deal
+	(USER_ID ,AUC_NUMBER, BUY_BIDCOM , DEAL_CSFC)
+	values(#{sessionid} , #{num} , 1 , 1)
+</insert>
+
+<delete id="buynow2" parameterType="int">
+delete from my_deal
+where 	
+	AUC_NUMBER = #{num}
+	AND SELL_BIDDING =0
+	AND BUY_BIDCOM = 0 
+	AND DEAL_CSFC = 1 
+	AND PICK = 1 OR BUY_BIDFAIL = 1 or BUY_BIDDING = 1
+</delete>
+
+<update id="imgchan" parameterType="int">
+UPDATE  Deal_Auction
+SET   SAVE_AUC_MAINFILE='buynow.jpg',
+   AUC_DATE = TO_DATE('2099/01/01 10:00', 'YYYY.MM.DD HH24:MI'),
+   auc_price = auc_lprice
+ WHERE   AUC_NUMBER =  #{num}
+
+</update>
+
+<insert id="quesinput" parameterType="java.util.Map">
+	insert into deal_question
+	(QUESTION_NUMBER , WRITE_NUMBER , SUBJECT ,DEAL_CSFC , QUESTION_CONTENT , SELL_ID , QUESTION_ID)
+	VALUES( qs_seq.nextval  , #{num} , #{sub} , 1 ,  #{content} , #{sellid}, #{sessionid} )
+	
+</insert>
+
+<select id="dealbuyquestion" resultType="Object"  parameterType="java.util.Map">
+	select * from MY_DEAL WHERE 
+	pick = 1 AND USER_ID = #{sessionid} AND AUC_NUMBER = #{num} AND DEAL_CSFC = 1
+</select>
+
+<update id="soldimg" parameterType="int">
+UPDATE  Deal_Auction
+SET   SAVE_AUC_MAINFILE='soldout.jpg'
+ WHERE   AUC_NUMBER =  #{num}
+
+</update>
+
+<select id="dealunit" resultType="int"  parameterType="int">
+	select AUC_UNIT from deal_auction WHERE 
+	AUC_NUMBER = #{num}
+</select>
+
+<select id="beforebidid" resultType="String"  parameterType="int">
+	select user_id from my_deal WHERE 
+	AUC_NUMBER = #{num} and
+	BUY_BIDDING = 1 
+</select>
+
+<select id="deallprice" resultType="int"  parameterType="int">
+	select AUC_LPRICE from deal_auction WHERE 
+	AUC_NUMBER = #{num}
+</select>
+
+</mapper>

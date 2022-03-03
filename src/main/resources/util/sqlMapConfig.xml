@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<configuration>
+  <typeAliases>
+		<typeAlias alias="member"	type="com.project.sports.domain.Member"/>
+		<typeAlias alias="FR"  		type="com.project.sports.domain.BBS_FR" />
+   	<typeAlias alias="FCM" 		type="com.project.sports.domain.BBS_FCM" />
+		<typeAlias alias="auction"	type="com.project.sports.domain.DealAuction"/>
+		<typeAlias alias="direct"	type="com.project.sports.domain.DealDirect"/>
+		<typeAlias alias="Water"	type="com.project.sports.domain.WaterIntake"/>
+		<typeAlias alias="match"	type="com.project.sports.domain.Match"/>
+		<typeAlias alias="sports"	type="com.project.sports.domain.Sports"/>
+		<typeAlias alias="mentor"	type="com.project.sports.domain.Mentor"/>
+		<typeAlias alias="pm"		type="com.project.sports.domain.PersonalManagement"/>
+  	<typeAlias alias="mydeal"	type="com.project.sports.domain.MyDeal"/>
+		<typeAlias alias="matchinfo" type="com.project.sports.domain.MatchInfo"/>	
+		<typeAlias alias="mentee"	type="com.project.sports.domain.Mentee"/>	
+		<typeAlias alias="AR"	    type="com.project.sports.domain.MatchAppReq"/>
+		<typeAlias alias="apply"	    type="com.project.sports.domain.Match_Apply"/>
+		<typeAlias alias="question"	    type="com.project.sports.domain.DealQuestion"/>
+		<typeAlias alias="deadline"	    type="com.project.sports.domain.Match_Deadline"/>
+		<typeAlias alias="point"	    type="com.project.sports.domain.DealPoint"/>
+  </typeAliases>
+  
+  <mappers>
+	<mapper resource="sql/member.xml"/>
+	<mapper resource="sql/Deal_Auction.xml"/>
+	<mapper resource="sql/Deal_Direct.xml"/>
+ 	<mapper resource="sql/BBS_FR.xml"/>
+ 	<mapper resource="sql/BBS_FCM.xml"/>
+ 	<mapper resource="sql/Water_Intake.xml"/>
+ 	<mapper resource="sql/Sport_match.xml"/>
+ 	<mapper resource="sql/mmatch.xml"/>
+ 	<mapper resource="sql/Personal_Management.xml"/>	
+ 	<mapper resource="sql/MyDeal.xml"/>
+  	<mapper resource="sql/Main.xml"/>	
+  </mappers>
+</configuration>

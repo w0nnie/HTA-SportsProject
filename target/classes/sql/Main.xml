@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?><!--  SQL 맵퍼 파일은 xml이기 때문에 제일 먼저 xml 선언이 옵니다. -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Mains">
+
+<select id="sportRecommList" parameterType="int" resultType="sports">
+	SELECT * FROM 
+	(SELECT ROWNUM RNUM, s.*
+	 FROM
+	    (select * from sports
+	     where inout_door = #{state}
+	     order by dbms_random.value) s
+	)
+	WHERE RNUM <![CDATA[<=]]> 3
+</select>
+
+</mapper>

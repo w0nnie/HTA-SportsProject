@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Match">
+	
+	<select id="count" resultType="int" parameterType="int">
+		select count(*) from sport_register
+		where sport_num = #{num}
+			and REGISTER_STUS = 0
+	</select>
+	
+	<select id="searchlist" resultType="match" parameterType="java.util.Map">
+		select * 
+		from Sport_register
+		<where>
+			<if test='MATCH_ADR!="지역"'>
+				MATCH_ADR =#{MATCH_ADR}
+			</if>
+			<if test='MATCH_DTL_ADR!="세부지역"'>
+				and MATCH_DTL_ADR =#{MATCH_DTL_ADR}
+			</if>
+			<if test='MATCH_TIME!=""'>
+				and MATCH_TIME =#{MATCH_TIME}
+			</if>
+			<if test='MATCH_PRS!="0"'>
+				and MATCH_PRS =#{MATCH_PRS}
+			</if>
+			<if test='MATCH_SKL!=""'>
+				and MATCH_SKL =#{MATCH_SKL}
+			</if>
+		</where>
+		and sport_num =#{num}
+		and REGISTER_STUS = 0
+	</select>
+	
+	<select id="list" resultType="match" parameterType="java.util.Map">
+		select * from 
+		(select rownum rnum, b.* 
+		from 
+			(select * from Sport_register
+			where sport_num = #{num} and REGISTER_STUS = 0
+			order by REGISTER_NUM desc) b
+		)
+		where rnum &gt;= #{start} and rnum &lt; = #{end}
+	</select>
+	
+	<select id="selSportName" resultType="string" parameterType="java.util.Map">
+		SELECT sports_name 
+		FROM sports 
+		WHERE sports_num = #{sports_num}
+	</select>
+	
+	<select id="selRegi" resultType="match" parameterType="java.util.Map">
+		select * from Sport_register
+		where REGISTER_NUM =#{REGISTER_NUM}
+	</select>
+	
+	
+	<insert id="insert" parameterType="match">
+		<selectKey keyProperty="REGISTER_NUM" resultType="int" order="BEFORE">
+			select reg_seq.nextval as REGISTER_NUM FROM DUAL
+		</selectKey>
+		insert into SPORT_REGISTER(REGISTER_ID,REGISTER_NUM,SPORT_NUM,MATCH_PRS,MATCH_ADR,MATCH_DTL_ADR,MATCH_TIME,MATCH_SKL)
+		values
+		(#{REGISTER_ID},#{REGISTER_NUM}, #{SPORT_NUM}, #{MATCH_PRS}, #{MATCH_ADR}, #{MATCH_DTL_ADR},#{MATCH_TIME},#{MATCH_SKL})
+	</insert>
+	
+	<update id="Regiupdate" parameterType="match">
+		update Sport_register
+		set REGISTER_STUS =1
+		where REGISTER_NUM = #{REGISTER_NUM}
+	</update>
+	
+	<select id="getemail" resultType="string" parameterType="string">
+		select USER_EMAIL
+		from MEMBER_INFO
+		where USER_ID = #{REGISTER_ID}
+	</select>
+	
+	<select id="getMobile" resultType="string" parameterType="string">
+		select USER_MOBILE
+		from MEMBER_INFO
+		where USER_ID = #{REGISTER_ID}
+	</select>
+	
+	<insert id="ApplyMatch" parameterType="apply">
+		<selectKey keyProperty="APPLY_NUM" resultType="int" order="BEFORE">
+			select aply_seq.nextval as APPLY_NUM FROM DUAL
+		</selectKey>
+		insert into SPORT_APPLY(SPORT_NUM,APPLY_ID,APPLY_NUM,REGISTER_NUM)
+		values
+		(#{SPORT_NUM}, #{APPLY_ID}, #{APPLY_NUM}, #{REGISTER_NUM})
+	</insert>
+	
+	
+	<select id="myRegi" parameterType="java.util.Map" resultType="match">
+		select * from Sport_register
+		where REGISTER_ID = #{id} and  REGISTER_STUS = 0 or REGISTER_ID = #{id} and REGISTER_STUS = 1
+	</select>
+	
+	
+	<select id="myApply" parameterType="java.util.Map" resultType="apply">
+		select SPORT_APPLY.SPORT_NUM, SPORT_REGISTER.MATCH_ADR, SPORT_REGISTER.MATCH_DTL_ADR, 
+			SPORT_REGISTER.MATCH_TIME, SPORT_REGISTER.MATCH_PRS, SPORT_REGISTER.MATCH_SKL
+			FROM SPORT_APPLY, SPORT_REGISTER
+			WHERE SPORT_APPLY.REGISTER_NUM = SPORT_REGISTER.REGISTER_NUM
+			AND SPORT_APPLY.APPLY_ID = #{id} and APPLY_STUS = 0
+	</select>
+	
+	
+	<select id="myDead" parameterType="java.util.Map" resultType="deadline">
+		select SPORT_DEADLINE.SPORT_NUM, SPORT_DEADLINE.REGISTER_ID, SPORT_DEADLINE.APPLY_ID, 
+		SPORT_REGISTER.MATCH_ADR, SPORT_REGISTER.MATCH_DTL_ADR, SPORT_REGISTER.MATCH_TIME,
+		SPORT_REGISTER.MATCH_PRS, SPORT_REGISTER.MATCH_SKL
+		FROM SPORT_DEADLINE, SPORT_REGISTER
+		WHERE SPORT_DEADLINE.REGISTER_NUM = SPORT_REGISTER.REGISTER_NUM
+		AND SPORT_DEADLINE.REGISTER_ID = #{id} OR SPORT_DEADLINE.REGISTER_NUM = SPORT_REGISTER.REGISTER_NUM and APPLY_ID = #{id}
+	</select>
+	
+	<update id="MactingUpdate" parameterType="match">
+		update Sport_register
+		set MATCH_PRS = #{MATCH_PRS} , MATCH_SKL = #{MATCH_SKL}, MATCH_TIME = #{MATCH_TIME}
+		where REGISTER_NUM = #{REGISTER_NUM}
+	</update>
+	
+	<delete id="delete" parameterType="match">
+		delete from Sport_register where REGISTER_NUM = #{REGISTER_NUM}
+	</delete>
+	
+	<select id="getApplyID" resultType="string" parameterType="int">
+		select APPLY_ID 
+		from SPORT_APPLY
+		where REGISTER_NUM = #{REGISTER_NUM}
+	</select>
+	
+	<select id="getRegiID" resultType="string" parameterType="int">
+		select REGISTER_ID 
+		from SPORT_REGISTER
+		where REGISTER_NUM = #{REGISTER_NUM}
+	</select>
+	
+	<update id="ApplyupdateMatch" parameterType="apply">
+		update SPORT_APPLY
+		set APPLY_STUS =1
+		where REGISTER_NUM = #{REGISTER_NUM}
+	</update>
+	
+	<update id="Regifinalupdate" parameterType="match">
+		update Sport_register
+		set REGISTER_STUS = 2
+		where REGISTER_NUM = #{REGISTER_NUM}
+	</update>
+	
+	<insert id="DeadMatch" parameterType="java.util.Map">
+		<selectKey keyProperty="DEADLINE_NUM" resultType="int" order="BEFORE">
+			select dead_seq.nextval as DEADLINE_NUM FROM DUAL
+		</selectKey>
+		insert into SPORT_DEADLINE(REGISTER_ID,APPLY_ID,SPORT_NUM,REGISTER_NUM,DEADLINE_NUM)
+		values
+		(#{REGISTER_ID}, #{APPLY_ID}, #{SPORT_NUM}, #{REGISTER_NUM} ,#{DEADLINE_NUM})	
+	</insert>
+</mapper>

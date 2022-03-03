@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean class="org.apache.commons.dbcp.BasicDataSource" id="dataSource" destroy-method="close">
+	    <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"/>
+        <property name="username" value="scott"/>
+        <property name="password" value="tiger"/>
+	</bean>
+	
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+		<property ref="dataSource" name="dataSource"/>
+		<property name="configLocation" value="classpath:util/sqlMapConfig.xml"/>
+	</bean>
+	
+	<!-- SqlSssionTemplate는 마이바티스 스프링 연동모듈의 핵심입니다.
+	     SqlSssionTemplate은 쓰레드에 안전하고 여러개의 DAO나 매퍼에서 공유 할 수 있습니다.-->
+	<bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" index="0"/>
+	</bean>
+	
+	<!-- 
+	     빈의 이름이 정해져있습니다.
+	     파일업로드 설정 id 값 꼭 일치 시켜야 합니다.
+	   id값을 다르게 사용하면 nullpointerException발생 
+	-->
+	<bean id="multipartResolver"
+	 class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	 	<!-- 
+	 		1024 * 1024 * 10 byte : 10mb 
+	 	    maxUploadSize는 한번에 전달될 수있는 최대 크기를 의미
+	 	       지정하지 않으면 기본이 -1이고 이는 파일크기 무제한이라는 뜻
+	 	-->
+	 	<property name="maxUploadSize" value="10485760"/>
+	 </bean>
+	<util:properties id="mailinfo" location="classpath:pro/mail.properties"/>
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.naver.com"/>
+		<property name="port" value="587"/>
+		<property name="username" value="#{mailinfo['id']}"/>
+		<property name="password" value="#{mailinfo['password']}"/>
+		<property name="javaMailProperties">
+			<props><prop key="mail.smtp.auth">true</prop></props>
+		</property>
+	</bean>
+	 
+	 
+	 <bean id="transactionManager"
+	 	class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+	 	<property name="dataSource" ref="dataSource"></property>	
+	 </bean>
+	 
+</beans>

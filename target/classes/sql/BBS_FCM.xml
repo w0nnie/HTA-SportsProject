@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BBS_FCM">
+	
+	<select id="count" resultType="int" parameterType="int">
+		select count(*)
+		from BBS_FCM
+		where FR_NO = #{FR_NO}
+	</select>
+	
+	<select id="getList" resultType="FCM" parameterType="map" >
+	<!-- 	select	FCM_NO, BBS_FCM.USER_ID, FCM_CONTENT, FCM_REF_DATE, FCM_RE_LEV,
+				FCM_RE_SEQ, FCM_RE_REF, MEMBER_INFO.USER_IMAGE 
+		from BBS_FCM join MEMBER_INFO
+		on BBS_FCM.USER_ID = MEMBER_INFO.USER_ID
+		where FR_NO = #{FR_NO}
+		<if test="state == 2">
+		order by FCM_RE_REF desc
+		</if>
+		and FCM_RE_SEQ asc -->
+		
+		select * 
+		from( select rownum rnum, FCM_NO, USER_ID, FCM_CONTENT, FCM_REF_DATE, FR_NO
+			from(
+				  select FCM_NO, USER_ID, FCM_CONTENT, FCM_REF_DATE, FR_NO
+				  from BBS_FCM
+				  where FR_NO = #{FR_NO}
+				  order by FCM_REF_DATE desc
+				 )
+			)
+		where rnum between #{start} and #{end}
+	</select>
+	<insert id="insert" parameterType="FCM">
+		insert into BBS_FCM 
+		values(FCM_SEQ.nextval, #{USER_ID}, #{FCM_CONTENT},sysdate,#{FR_NO})
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		delete BBS_FCM
+		where FCM_NO = #{FCM_NO}
+	</delete>
+	
+	<update id="update" parameterType="FCM">
+		update BBS_FCM
+		set FCM_CONTENT = #{FCM_CONTENT}
+		where FCM_NO = #{FCM_NO}
+	</update>
+	
+</mapper>

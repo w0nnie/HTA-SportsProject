@@ -1,0 +1,7 @@
+   .gnb_wrap					{position:relative; border-top:3px solid #e3e3e3; height:60px;}
+   .gnb						{position:relative;width:85%;margin:0 auto;overflow:hidden;}
+   .gnb ul					{margin-left:auto; margin-right:auto; display:table}
+   .gnb ul>li					{float:left;  text-align:center; margin-right: 100px;margin-left:100px; margin-top:5px; display:inline-block;}
+   .gnb ul>li a				{display:inline-block;zoom:1;*display:inline;width:100%;font-size:15px;line-height:45px; color:#222;  text-transform: uppercase; box-sizing:border-box; }
+   .gnb ul>li a:hover			{color:#eb3b04;}
+   .gnb ul>li a.current		{display:inline-block;zoom:1;*display:inline;color:#eb3b04;}

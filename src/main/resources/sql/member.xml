@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?><!--  SQL 맵퍼 파일은 xml이기 때문에 제일 먼저 xml 선언이 옵니다. -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Members">
+<select id="idcheck" resultType="member" parameterType="String">
+select * from MEMBER_INFO where USER_ID=#{USER_ID}
+</select>
+
+<insert id="insert" parameterType="member">
+insert into MEMBER_INFO(USER_ID,USER_PASS,USER_NAME,USER_JUMIN,USER_MOBILE,
+USER_ADDRESS,USER_EMAIL,USER_HEIGHT,USER_PWEIGHT,USER_WWEIGHT,USER_BMI,USER_RMR,USER_PSPORTS)
+values(#{USER_ID},#{USER_PASS},#{USER_NAME},#{USER_JUMIN},
+#{USER_MOBILE},#{USER_ADDRESS},#{USER_EMAIL},#{USER_HEIGHT},
+#{USER_PWEIGHT},#{USER_WWEIGHT},#{USER_BMI},#{USER_RMR},#{USER_PSPORTS})
+</insert>
+
+<select id="searchCount" resultType="int" parameterType="map">
+<!-- 
+resultType은 select문에서만 사용, dao의 자료형을 따라감
+parameterType은 dao의 값을 가져옴
+ -->
+select count(*)<!-- 전체 행 갯수 -->
+from MEMBER_INFO
+where USER_ID != 'admin'
+	<include refid="search_"/>
+</select>
+
+<select id="searchList" parameterType="map" resultType="member">
+select * from
+(select rownum rnum, b.* from
+	(select * from MEMBER_INFO
+	where USER_ID != 'admin'
+  <include refid="search_"/>
+  order by USER_ID
+  )b
+)
+where rnum &gt; = #{start} and rnum &lt; = #{end}
+</select>
+
+<sql id="search_">
+  <if test="search_field != null">
+    and
+    <choose>
+	<when test="search_field=='USER_ID'">USER_ID</when>
+	<when test="search_field=='USER_NAME'">USER_NAME</when>
+    </choose>
+	like #{search_word}
+  </if>
+</sql>
+
+<delete id="delete" parameterType="String">
+delete from MEMBER_INFO where USER_ID = #{USER_ID}
+</delete>
+
+<update id="update" parameterType="member">
+update MEMBER_INFO
+set USER_PASS = #{USER_PASS}, USER_JUMIN = #{USER_JUMIN}, 
+USER_MOBILE = #{USER_MOBILE}, USER_EMAIL=#{USER_EMAIL}, 
+USER_ADDRESS=#{USER_ADDRESS}, USER_HEIGHT=#{USER_HEIGHT}, 
+USER_PWEIGHT=#{USER_PWEIGHT}, USER_WWEIGHT=#{USER_WWEIGHT}, 
+USER_BMI=#{USER_BMI}, USER_RMR=#{USER_RMR} 
+where USER_ID=#{USER_ID}
+</update>
+
+</mapper>

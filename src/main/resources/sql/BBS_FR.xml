@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BBS_FR">
+
+	<select id="searchCount" parameterType="map" resultType="int">
+		select count(*) 
+		from BBS_FR
+	 	<include refid="search_"/>
+	</select>
+	
+	<select id="searchList" parameterType="list" resultType="FR">
+		 select * from
+		  (select rownum rnum, b.*
+		  from 
+		  		(select BBS_FR.*, nvl(cnt,0) cnt
+				from 
+				BBS_FR left outer join (select FR_NO, count(*) cnt
+		 								from BBS_FCM
+		 								group by FR_NO) c
+				on BBS_FR.FR_NO = c.FR_NO
+				<include refid="search_"/>
+				order by FR_DATE desc
+				)b
+		  )
+	 	 where
+	  	<![CDATA[
+	  		rnum >= #{start} 
+	  	 AND
+	  	 	rnum <= #{end} 
+	  	]]>
+	</select>
+	
+	<sql id="search_">
+		<if test="search_field!=null">
+		where
+	 	<choose>
+	 		<when test="search_field=='FR_CSFC'">FR_CSFC</when>
+	 		<when test="search_field=='USER_ID'">USER_ID</when>
+	 		<when test="search_field=='FR_SUBJECT'">FR_SUBJECT</when>
+	 		<when test="search_field=='FR_CONTENT'">FR_CONTENT</when>
+	 	</choose>
+	 	like #{search_word}
+		</if>
+	</sql>
+	
+	<insert id="insert" parameterType="FR">
+	<selectKey resultType="int" order="BEFORE"
+					keyProperty="FR_NO">
+			select nvl(max(FR_NO),0)+1 from BBS_FR
+		</selectKey>
+		insert into BBS_FR
+		(FR_NO, 
+		USER_ID, FR_PASS, FR_CSFC,
+		FR_SUBJECT, FR_CONTENT, FR_DATE,
+		FR_READCOUNT, FR_FILE, 
+		FR_ORIGINAL)
+		values
+		(#{FR_NO},
+		#{USER_ID}, #{FR_PASS}, #{FR_CSFC},
+		#{FR_SUBJECT}, #{FR_CONTENT},
+		sysdate, #{FR_READCOUNT},
+		#{FR_FILE, jdbcType=VARCHAR},
+		#{FR_ORIGINAL, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<select id="detail" parameterType="int" resultType="FR">
+		select * from BBS_FR
+		where FR_NO = #{FR_NO}
+	</select>
+	
+	<update id="readCountUpdate" parameterType="int">
+		update BBS_FR
+		set FR_READCOUNT=FR_READCOUNT+1
+		where FR_NO = #{number}
+	</update>
+
+	<select id="FrWriter" parameterType="map" resultType="FR">
+		select * from BBS_FR
+		where 	 FR_NO = #{num}
+		and 	 FR_PASS = #{pass}
+	</select>
+	
+	 <delete id="delete" parameterType="FR">
+	     delete from BBS_FR 
+		 where 	FR_NO = #{FR_NO}
+	</delete>
+	
+	<update id="modify" parameterType="FR">
+		update BBS_FR
+		set
+			FR_SUBJECT=#{FR_SUBJECT},
+			FR_CONTENT=#{FR_CONTENT},
+			FR_FILE=#{FR_FILE, jdbcType=VARCHAR},
+			FR_ORIGINAL=#{FR_ORIGINAL, jdbcType=VARCHAR}
+		where FR_NO=${FR_NO}
+	</update>
+	
+</mapper>

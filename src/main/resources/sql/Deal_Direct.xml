@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Direct">
+
+<insert id="insert" parameterType="Direct">
+	insert into Deal_Direct
+	(DIR_NUMBER, DIR_SUBJECT ,DIR_CONTENT,USER_ID ,
+	DIR_PRICE,DIR_PHONE,DIR_ADDRESS , DIR_DATE,
+	ORI_DIR_MAINFILE , SAVE_DIR_MAINFILE ,
+	ORI_DIR_FILE2 ,SAVE_DIR_FILE2 ,
+	 ORI_DIR_FILE3 ,SAVE_DIR_FILE3 ,
+	 ORI_DIR_FILE4 , SAVE_DIR_FILE4)
+	VALUES( DIR_SEQ.NEXTVAL , #{DIR_SUBJECT} , #{DIR_CONTENT} ,
+			#{USER_ID} , #{DIR_PRICE},
+			#{DIR_PHONE} , #{DIR_ADDRESS},
+			sysdate , #{ORI_DIR_MAINFILE} ,
+			#{SAVE_DIR_MAINFILE} , #{ORI_DIR_FILE2} ,
+			#{SAVE_DIR_FILE2} , #{ORI_DIR_FILE3} ,
+			#{SAVE_DIR_FILE3} , #{ORI_DIR_FILE4} ,
+			#{SAVE_DIR_FILE4})
+
+</insert>
+<update id="modify" parameterType="Direct">
+		update deal_direct
+		set
+			DIR_SUBJECT=#{DIR_SUBJECT},
+			DIR_PHONE=#{DIR_PHONE},
+			DIR_ADDRESS=#{DIR_ADDRESS},
+			DIR_PRICE=#{DIR_PRICE},
+			DIR_CONTENT=#{DIR_CONTENT},
+			ORI_DIR_MAINFILE=#{ORI_DIR_MAINFILE, jdbcType=VARCHAR},
+			SAVE_DIR_MAINFILE=#{SAVE_DIR_MAINFILE, jdbcType=VARCHAR},
+			ORI_DIR_FILE2=#{ORI_DIR_FILE2, jdbcType=VARCHAR},
+			SAVE_DIR_FILE2=#{SAVE_DIR_FILE2, jdbcType=VARCHAR},
+			ORI_DIR_FILE3=#{ORI_DIR_FILE3, jdbcType=VARCHAR},
+			SAVE_DIR_FILE3=#{SAVE_DIR_FILE3, jdbcType=VARCHAR},
+			ORI_DIR_FILE4=#{ORI_DIR_FILE4, jdbcType=VARCHAR},
+			SAVE_DIR_FILE4=#{SAVE_DIR_FILE4, jdbcType=VARCHAR}
+		where DIR_NUMBER=#{DIR_NUMBER}
+</update>
+
+<select id="count" resultType="int">
+	select count(*) from deal_direct
+</select>
+
+<select id="list" parameterType="java.util.Map" resultType="Direct">
+select * from
+	(select rownum rnum , 	DIR_NUMBER , DIR_SUBJECT , 
+	DIR_PRICE ,DIR_ADDRESS ,DIR_DATE ,SAVE_DIR_MAINFILE ,DIR_READCOUNT , USER_ID
+		from(
+		select * from deal_direct
+		order by   <include refid="view" />))
+	 where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+</select>
+	
+<select id="detail" parameterType="int" resultType="Direct">
+	select *
+	from deal_direct
+	where DIR_NUMBER = #{number}
+
+</select>
+
+<delete id="delete" parameterType="int">
+	delete from deal_direct
+	where dir_number = #{number}
+
+</delete>
+
+<select id = "searchlist" parameterType="java.util.Map"
+	resultType="Direct">
+select * from
+	(select rownum rnum , 	DIR_NUMBER , DIR_SUBJECT , 
+	DIR_PRICE ,DIR_ADDRESS ,DIR_DATE ,SAVE_DIR_MAINFILE ,DIR_READCOUNT ,USER_ID
+		from(
+		select * from deal_direct
+		where DIR_SUBJECT like #{search_word}
+		order by  <include refid="view" />
+		))
+	 where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+	 
+
+	
+</select>
+
+<update id="readcount" parameterType="int">
+update deal_direct set DIR_READCOUNT = DIR_READCOUNT +1 
+where dir_number = #{num} 
+
+</update>
+
+
+<select id="sortlist" parameterType="java.util.Map" resultType="Direct">
+select * from
+	(select rownum rnum , 	DIR_NUMBER , DIR_SUBJECT , 
+	DIR_PRICE ,DIR_ADDRESS ,DIR_DATE ,SAVE_DIR_MAINFILE ,DIR_READCOUNT ,USER_ID
+		from(
+		select * from deal_direct
+		order by <include refid="sort" />))
+	 where rnum &gt;= #{start} and rnum  &lt;=  #{end}
+</select>
+
+	<sql id="sort">
+		<if test="view != null">
+			<choose>
+				<when test="view=='DIR_NUMBER desc'">DIR_NUMBER desc</when>
+				<when test="view=='DIR_NUMBER asc'">DIR_NUMBER asc</when>
+				<when test="view=='DIR_READCOUNT desc'">DIR_READCOUNT desc</when>
+				<when test="view=='DIR_PRICE desc'">DIR_PRICE desc</when>
+			</choose>
+		</if>
+	</sql>
+	
+	<sql id="view">
+		<if test="view2 != null">
+			<choose>
+				<when test="view2==1">DIR_NUMBER desc</when>
+				<when test="view2==2">DIR_NUMBER asc</when>
+				<when test="view2==3">DIR_READCOUNT desc</when>
+				<when test="view2==4">DIR_PRICE desc</when>
+			</choose>
+		</if>
+	</sql>
+	
+	
+<select id="pickcheck" resultType="Object"  parameterType="java.util.Map">
+	select * from MY_DEAL WHERE 
+	pick = 1 AND USER_ID = #{sessionid} AND AUC_NUMBER = #{num} AND DEAL_CSFC = 2
+</select>
+
+<insert id="pick" parameterType="java.util.Map">
+	insert into MY_DEAL
+	(USER_ID, AUC_NUMBER , PICK , DEAL_CSFC)
+	VALUES( #{sessionid}  , #{num} , 1 , 2 )
+	
+</insert>
+
+<insert id="quesinput" parameterType="java.util.Map">
+	insert into deal_question
+	(QUESTION_NUMBER , WRITE_NUMBER , SUBJECT ,DEAL_CSFC , QUESTION_CONTENT , SELL_ID , QUESTION_ID)
+	VALUES( qs_seq.nextval  , #{num} , #{sub} , 2 ,  #{content} , #{sellid}, #{sessionid} )
+	
+</insert>
+
+</mapper>

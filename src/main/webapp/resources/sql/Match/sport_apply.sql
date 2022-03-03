@@ -1,0 +1,39 @@
+DROP TABLE SPORT_APPLY cascade constraints purge;
+
+create table SPORT_APPLY(
+	SPORT_NUM references SPORTS(SPORTS_NUM)
+	APPLY_ID VARCHAR2(60) references MEMBER_INFO(USER_ID),
+	APPLY_NUM  NUMBER(20) primary key, --seq
+	REGISTER_NUM references SPORT_REGISTER(REGISTER_NUM),
+	APPLY_STUS NUMBER(20) default 0 --0이면 응답대기중 1번이면 매칭완료  deadline--
+);
+
+create sequence aply_seq;
+
+select * from SPORT_APPLY
+select APPLY_ID from SPORT_APPLY where REGISTER_NUM = 10;
+insert into SPORT_APPLY(APPLY_ID, APPLY_NUM , REGISTER_NUM) values('admin01', aply_seq.nextval, 2);
+insert into SPORT_APPLY(APPLY_ID, APPLY_NUM , REGISTER_NUM) values('admin02', aply_seq.nextval, 3);
+insert into SPORT_APPLY(APPLY_ID, APPLY_NUM , REGISTER_NUM) values('admin03', aply_seq.nextval, 4);
+
+
+create table SPORT_REGISTER(
+	REGISTER_ID VARCHAR2(60) references MEMBER_INFO(USER_ID),
+	REGISTER_NUM NUMBER(20) primary key,  --reg_seq--
+	SPORT_NUM references SPORTS(SPORTS_NUM), 
+	MATCH_PRS NUMBER(20),
+	MATCH_ADR VARCHAR2(100),
+	MATCH_DTL_ADR VARCHAR2(100),
+	MATCH_TIME VARCHAR2(100),
+	MATCH_SKL VARCHAR2(100),
+	REGISTER_STUS NUMBER(20) default 0
+	--constraint REGISTER_STUS_CK check (REGISTER_STUS in ('0','1','2'))--
+	--모집중 0, 대기중 1, 마감2 (게시글에 대한 상태정보) --
+);
+
+
+select SPORT_APPLY.SPORT_NUM, SPORT_REGISTER.MATCH_ADR, SPORT_REGISTER.MATCH_DTL_ADR, 
+			SPORT_REGISTER.MATCH_TIME, SPORT_REGISTER.MATCH_PRS, SPORT_REGISTER.MATCH_SKL
+			FROM SPORT_APPLY, SPORT_REGISTER
+			WHERE SPORT_APPLY.REGISTER_NUM = SPORT_REGISTER.REGISTER_NUM
+			AND SPORT_APPLY.APPLY_ID = 'admin111' and APPLY_STUS = 0;
