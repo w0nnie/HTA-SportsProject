@@ -5,6 +5,7 @@ HTA-SportsProject
 
 - 레시피 조회 서비스입니다. 사용자는 전체 레시피조회, 타입, 분류, 칼로리, 재료별 조회가 가능합니다. 또한 서버기능도 하기때문에 api설계에 맞는 url로 접근시 해당 데이터를 json형태로 조회 가능합니다.
 
+[권진원(파이널프로젝트).pdf](https://github.com/w0nnie/HTA-SportsProject/files/9117698/default.pdf)
 
 ## 개요
 
