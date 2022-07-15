@@ -61,11 +61,11 @@ HTA-SportsProject
 ![사이트기능구조도](https://user-images.githubusercontent.com/87374274/179147620-9a70b0ba-27f0-4caf-99a1-d246ca6a61fd.PNG)
 
 
-### 테이블 정의서
+## 테이블 정의서
 
 ![테이블정의서](https://user-images.githubusercontent.com/87374274/179147574-a1f78f07-c971-4dc4-b045-649ded87c663.PNG)
 
 
-### 클레스 다이어그램
+## 클레스 다이어그램
 
 ![클래스다이어그램](https://user-images.githubusercontent.com/87374274/179147512-ff3984e5-5b46-42fa-9d76-aa91e3c158f8.PNG)
